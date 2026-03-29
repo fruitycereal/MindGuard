@@ -1,98 +1,70 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const moods = [
+  { label: "I'm really happy", color: '#9FE1CB', text: '#085041' },
+  { label: "I'm doing okay", color: '#B5D4F4', text: '#0C447C' },
+  { label: 'A bit heavy', color: '#FAC775', text: '#633806' },
+  { label: 'Really struggling', color: '#D3D1C7', text: '#444441' },
+  { label: "I don't even know", color: '#EEEDFE', text: '#3C3489' },
+];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.greeting}>Hey. How are you doing today — really?</Text>
+      <Text style={styles.sub}>No wrong answers. Just how you actually feel.</Text>
+
+      {moods.map((mood) => (
+        <TouchableOpacity
+          key={mood.label}
+          style={[styles.moodBtn, { backgroundColor: mood.color }]}
+          onPress={() => router.push({
+            pathname: '/(tabs)/explore',
+            params: { mood: mood.label }
+          })}
+        >
+          <Text style={[styles.moodText, { color: mood.text }]}>{mood.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAF8',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    padding: 24,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  greeting: {
+    fontSize: 24,
+    fontWeight: '500',
+    color: '#2C2C2A',
+    textAlign: 'center',
+    lineHeight: 34,
+    marginBottom: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  sub: {
+    fontSize: 14,
+    color: '#888780',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  moodBtn: {
+    width: '100%',
+    padding: 18,
+    borderRadius: 14,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  moodText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
