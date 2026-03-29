@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { saveMoodEntry } from '../lib/moodService';
 
 export default function JournalScreen() {
   const { mood } = useLocalSearchParams();
@@ -30,6 +31,7 @@ export default function JournalScreen() {
       });
       const data = await res.json();
       setResponse(data.response);
+      await saveMoodEntry(mood as string, entry, data.response);
     } catch (error) {
       setResponse("Something went wrong. But your words still matter.");
     }
