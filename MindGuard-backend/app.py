@@ -10,8 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-client = anthropic.Anthropic(api_key=os.getenv("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"))
-
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 @app.route('/journal-response', methods=['POST'])
 def journal_response():
     data = request.json
