@@ -1,9 +1,9 @@
 # MindGuard
 
-A free, private mental wellness app for teenagers — built in Thai and English.
+A free, private mental wellness app for teenagers,  built in Thai and English.
 
 ## The Problem
-Mental health stigma in Thailand means most teenagers suffer in silence. Existing apps are built for English-speaking adults. There is almost nothing designed for a Thai teenager who just needs somewhere to express how they feel — without judgment, without cost.
+Mental health stigma in Thailand means most teenagers suffer in silence. Existing apps are built for English-speaking adults. There is almost nothing designed for a Thai teenager who just needs somewhere to express how they feel without judgment, without cost.
 
 ## The Solution
 MindGuard is a daily emotional check-in and journaling app that helps teens understand their own feelings and know when to ask for help. No diagnoses. No clinical labels. Just a quiet, safe space that's always there.
