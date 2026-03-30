@@ -5,10 +5,12 @@ export async function saveMoodEntry(
   entry: string,
   aiResponse: string
 ) {
+  const { data: { user } } = await supabase.auth.getUser()
+  
   const { error } = await supabase
     .from('mood_checkins')
     .insert({ 
-      user_id: 'anonymous',
+      user_id: user?.id ?? 'anonymous',
       mood: mood, 
       entry: entry,
     })
@@ -17,9 +19,12 @@ export async function saveMoodEntry(
 }
 
 export async function getMoodEntries() {
+  const { data: { user } } = await supabase.auth.getUser()
+  
   const { data, error } = await supabase
     .from('mood_checkins')
     .select('*')
+    .eq('user_id', user?.id ?? 'anonymous')
     .order('created_at', { ascending: false })
 
   if (error) throw error
