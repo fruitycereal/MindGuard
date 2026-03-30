@@ -1,4 +1,5 @@
 import { getMoodEntries } from '@/lib/moodService';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -17,6 +18,7 @@ export default function ProfileScreen() {
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const router = useRouter();
 
   useEffect(() => { loadEntries(); }, []);
 
@@ -85,8 +87,12 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Your week</Text>
-      <Text style={styles.sub}>Patterns help you understand yourself.</Text>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Your week</Text>
+          <Text style={styles.sub}>Patterns help you understand yourself.</Text>
+        </View>
+      </View>
 
       <View style={styles.praiseCard}>
         <Text style={styles.praiseText}>{praise.text}</Text>
@@ -151,16 +157,21 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 60,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
   title: {
     fontSize: 22,
     fontWeight: '500',
     color: '#2C2C2A',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   sub: {
     fontSize: 14,
     color: '#888780',
-    marginBottom: 24,
     lineHeight: 22,
   },
   praiseCard: {
