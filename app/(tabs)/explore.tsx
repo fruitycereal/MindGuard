@@ -1,7 +1,7 @@
+import { saveMoodEntry } from '@/lib/moodService';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { saveMoodEntry } from '../lib/moodService';
 
 export default function JournalScreen() {
   const { mood } = useLocalSearchParams();
@@ -24,17 +24,23 @@ export default function JournalScreen() {
     if (!entry.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('http://192.168.0.14:8000/journal-response', {
+      const res = await fetch('http://192.168.1.198:8000/journal-response', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mood, entry }),
       });
       const data = await res.json();
       setResponse(data.response);
-      await saveMoodEntry(mood as string, entry, data.response);
-    } catch (error) {
-      setResponse("Something went wrong. But your words still matter.");
-    }
+      try {
+        await saveMoodEntry(mood as string, entry, data.response);
+        console.log('Saved to Supabase successfully');
+      } catch (saveError) {
+        console.log('Supabase save error:', saveError);
+      }
+      } catch (error) {
+        console.log('Error:', error)
+        setResponse("Something went wrong. But your words still matter.");
+      }
     setLoading(false);
   };
 

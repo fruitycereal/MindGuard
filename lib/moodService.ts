@@ -2,12 +2,16 @@ import { supabase } from './supabase'
 
 export async function saveMoodEntry(
   mood: string,
-  journalText: string,
+  entry: string,
   aiResponse: string
 ) {
   const { error } = await supabase
     .from('mood_checkins')
-    .insert({ mood_label: mood, journal_text: journalText, ai_response: aiResponse })
+    .insert({ 
+      user_id: 'anonymous',
+      mood: mood, 
+      entry: entry,
+    })
 
   if (error) throw error
 }
