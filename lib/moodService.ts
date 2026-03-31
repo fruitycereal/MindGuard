@@ -50,3 +50,12 @@ export async function getMoodEntries() {
   if (error) throw error;
   return data;
 }
+
+export async function updateMoodEntry(id: number, entry: string) {
+  const { error } = await supabase
+    .from('mood_checkins')
+    .update({ entry })
+    .eq('id', id);
+
+  if (error) throw error;
+}
