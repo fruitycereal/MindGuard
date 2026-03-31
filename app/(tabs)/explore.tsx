@@ -32,7 +32,7 @@ export default function JournalScreen() {
       const data = await res.json();
       setResponse(data.response);
       try {
-        await saveMoodEntry(mood as string, entry, data.response);
+        await saveMoodEntry('', entry, data.response);
         console.log('Saved to Supabase successfully');
       } catch (saveError) {
         console.log('Supabase save error:', saveError);
