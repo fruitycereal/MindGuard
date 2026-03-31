@@ -13,6 +13,23 @@ export default function SignupScreen() {
   const handleSignup = async () => {
     setLoading(true);
     setError('');
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      setLoading(false);
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one capital letter.');
+      setLoading(false);
+      return;
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      setError('Password must contain at least one special character (!@#$%^&*).');
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) setError(error.message);
     else router.replace('/(tabs)');
