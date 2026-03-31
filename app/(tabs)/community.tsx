@@ -133,7 +133,7 @@ export default function CommunityScreen() {
                   onPress={() => handleFeel(post)}
                 >
                   <Text style={[styles.feelText, feltPosts.has(post.id) && styles.feelTextActive]}>
-                    {post.feels_count} felt this
+                    {post.feels_count} felt this 💗
                   </Text>
                 </TouchableOpacity>
               </View>

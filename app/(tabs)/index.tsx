@@ -55,23 +55,40 @@ export default function HomeScreen() {
           ))}
         </>
       ) : (
-        <View style={styles.confirmedContainer}>
-          <Text style={styles.confirmedEmoji}>🌿</Text>
-          <Text style={styles.confirmedTitle}>Noted.</Text>
-          <Text style={styles.confirmedSub}>
-            You checked in as "{selected}". {'\n'}
-            Want to write about it?
-          </Text>
-          <TouchableOpacity
-            style={styles.journalBtn}
-            onPress={() => router.push('/(tabs)/explore')}
-          >
-            <Text style={styles.journalBtnText}>Open journal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setSaved(false)} style={styles.changeBtn}>
-            <Text style={styles.changeBtnText}>Change my mood</Text>
-          </TouchableOpacity>
-        </View>
+<View style={styles.confirmedContainer}>
+  <Text style={styles.confirmedEmoji}>🌿</Text>
+  <Text style={styles.confirmedTitle}>Noted.</Text>
+  <Text style={styles.confirmedSub}>
+    You checked in as "{selected}". {'\n'}
+    Want to write about it?
+  </Text>
+
+  {selected === 'Really struggling' && (
+    <View style={styles.crisisCard}>
+      <Text style={styles.crisisTitle}>You don't have to carry this alone.</Text>
+      <Text style={styles.crisisSub}>Real people are available right now:</Text>
+      <View style={styles.crisisRow}>
+        <Text style={styles.crisisName}>Samaritans Thailand</Text>
+        <Text style={styles.crisisNumber}>02 713 6793</Text>
+      </View>
+      <View style={styles.crisisRow}>
+        <Text style={styles.crisisName}>Mental Health Hotline</Text>
+        <Text style={styles.crisisNumber}>1323</Text>
+      </View>
+      <Text style={styles.crisisNote}>Free · 24 hours · confidential</Text>
+    </View>
+  )}
+
+  <TouchableOpacity
+    style={styles.journalBtn}
+    onPress={() => router.push('/(tabs)/explore')}
+  >
+    <Text style={styles.journalBtnText}>Open journal</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={() => setSaved(false)} style={styles.changeBtn}>
+    <Text style={styles.changeBtnText}>Change my mood</Text>
+  </TouchableOpacity>
+</View>
       )}
     </View>
   );
@@ -154,5 +171,48 @@ const styles = StyleSheet.create({
   changeBtnText: {
     color: '#888780',
     fontSize: 14,
+  },
+  crisisCard: {
+  backgroundColor: '#FCEBEB',
+  borderRadius: 14,
+  padding: 16,
+  marginBottom: 20,
+  width: '100%',
+  borderLeftWidth: 3,
+  borderLeftColor: '#A32D2D',
+  },
+  crisisTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#791F1F',
+    marginBottom: 4,
+  },
+  crisisSub: {
+    fontSize: 13,
+    color: '#A32D2D',
+    marginBottom: 12,
+  },
+  crisisRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#F7C1C1',
+  },
+  crisisName: {
+    fontSize: 13,
+    color: '#791F1F',
+    fontWeight: '500',
+  },
+  crisisNumber: {
+    fontSize: 13,
+    color: '#A32D2D',
+  },
+  crisisNote: {
+    fontSize: 11,
+    color: '#A32D2D',
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
