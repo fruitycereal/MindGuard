@@ -40,7 +40,7 @@ export default function JournalScreen() {
         await updateMoodEntry(editingId, entry);
         setResponse("Updated. Your words are safe here.");
       } else {
-        const res = await fetch('http://192.168.1.198:8000/journal-response', {
+        const res = await fetch('https://web-production-e9438.up.railway.app/journal-response', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mood: '', entry }),
