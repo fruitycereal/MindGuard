@@ -68,9 +68,9 @@ export default function ProfileScreen() {
     const count = entries.length;
     if (count === 0) return { text: "Welcome. This is your space.", sub: "Check in whenever you're ready." };
     if (count === 1) return { text: "You showed up. That's everything.", sub: "Come back tomorrow." };
-    if (count < 5) return { text: `You've checked in ${count} times.`, sub: "You're building something." };
-    if (count < 10) return { text: `You've shown up ${count} times.`, sub: "That's you choosing yourself, again and again." };
-    return { text: `${count} check-ins. You keep coming back.`, sub: "That takes more strength than you know." };
+    if (count < 5) return { text: `You've checked in ${count} days.`, sub: "You're building something." };
+    if (count < 10) return { text: `You've shown up ${count} days.`, sub: "That's you choosing yourself, again and again." };
+    return { text: `${count} days. You keep coming back.`, sub: "That takes more strength than you know." };
   };
 
   const calendarDays = getCalendarDays();
