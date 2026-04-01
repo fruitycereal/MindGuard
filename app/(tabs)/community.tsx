@@ -1,4 +1,5 @@
-import { addCommunityPost, getCommunityPosts, incrementFeels } from '@/lib/communityService';
+import { addCommunityPost, getCommunityPosts, toggleFeel } from '@/lib/communityService';
+import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -8,9 +9,17 @@ export default function CommunityScreen() {
   const [writing, setWriting] = useState(false);
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [feltPosts, setFeltPosts] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  useEffect(() => { loadPosts(); }, []);
+  useEffect(() => {
+    loadUser();
+    loadPosts();
+  }, []);
+
+  const loadUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUserId(user?.id ?? null);
+  };
 
   const loadPosts = async () => {
     try {
@@ -36,14 +45,11 @@ export default function CommunityScreen() {
     setSubmitting(false);
   };
 
-  const handleFeel = async (post: any) => {
-    if (feltPosts.has(post.id)) return;
+  const handleToggleFeel = async (post: any) => {
+    const currentlyFelt = post.post_feels?.some((f: any) => f.user_id === currentUserId);
     try {
-      await incrementFeels(post.id, post.feels_count);
-      setFeltPosts(prev => new Set([...prev, post.id]));
-      setPosts(prev => prev.map(p =>
-        p.id === post.id ? { ...p, feels_count: p.feels_count + 1 } : p
-      ));
+      await toggleFeel(post.id, currentlyFelt);
+      await loadPosts();
     } catch (error) {
       console.log('Error:', error);
     }
@@ -109,7 +115,7 @@ export default function CommunityScreen() {
         <Text style={styles.title}>You're not alone.</Text>
         <Text style={styles.sub}>Anonymous thoughts from people just like you.</Text>
         <TouchableOpacity style={styles.shareBtn} onPress={() => setWriting(true)}>
-          <Text style={styles.shareBtnText}>+ Share</Text>
+          <Text style={styles.shareBtnText}>+ Share something</Text>
         </TouchableOpacity>
       </View>
 
@@ -123,22 +129,26 @@ export default function CommunityScreen() {
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {posts.map((post) => (
-            <View key={post.id} style={styles.card}>
-              <Text style={styles.postText}>{post.content}</Text>
-              <View style={styles.cardFooter}>
-                <Text style={styles.postDate}>{formatDate(post.created_at)}</Text>
-                <TouchableOpacity
-                  style={[styles.feelBtn, feltPosts.has(post.id) && styles.feelBtnActive]}
-                  onPress={() => handleFeel(post)}
-                >
-                  <Text style={[styles.feelText, feltPosts.has(post.id) && styles.feelTextActive]}>
-                    {post.feels_count} felt this 💗
-                  </Text>
-                </TouchableOpacity>
+          {posts.map((post) => {
+            const felt = post.post_feels?.some((f: any) => f.user_id === currentUserId);
+            const feelCount = post.post_feels?.length ?? 0;
+            return (
+              <View key={post.id} style={styles.card}>
+                <Text style={styles.postText}>{post.content}</Text>
+                <View style={styles.cardFooter}>
+                  <Text style={styles.postDate}>{formatDate(post.created_at)}</Text>
+                  <TouchableOpacity
+                    style={[styles.feelBtn, felt && styles.feelBtnActive]}
+                    onPress={() => handleToggleFeel(post)}
+                  >
+                    <Text style={[styles.feelText, felt && styles.feelTextActive]}>
+                      {felt ? '♥' : '♡'} {feelCount} felt this
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
     </View>
@@ -165,6 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888780',
     lineHeight: 22,
+    marginBottom: 12,
   },
   shareBtn: {
     backgroundColor: '#185FA5',
@@ -172,7 +183,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     alignSelf: 'flex-start',
-    marginTop: 12,
   },
   shareBtnText: {
     color: '#E6F1FB',
