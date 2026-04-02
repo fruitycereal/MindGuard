@@ -39,8 +39,8 @@ export default function CommunityScreen() {
       setContent('');
       setWriting(false);
       await loadPosts();
-    } catch (error) {
-      console.log('Error:', error);
+    } catch (error: any) {
+      alert(error.message || 'Something went wrong.');
     }
     setSubmitting(false);
   };

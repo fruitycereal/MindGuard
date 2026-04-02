@@ -1,53 +1,10 @@
-'''
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import anthropic
+import random
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
-
-app = Flask(__name__)
-CORS(app)
-
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-@app.route('/journal-response', methods=['POST'])
-def journal_response():
-    data = request.json
-    mood = data.get('mood', '')
-    entry = data.get('entry', '')
-
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=300,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""You are a warm, gentle mental wellness companion for teenagers. 
-                A user selected their mood as: {mood}
-                They wrote this journal entry: {entry}
-                
-                Respond in 2-3 sentences. Be warm, validating, and human. 
-                Never diagnose. Never say 'I understand' — show it instead.
-                Never recommend therapy as your first response.
-                Acknowledge what they said specifically.
-                End with one gentle question or thought that helps them reflect further.
-                If they seem in serious distress, gently mention that support is available."""
-            }
-        ]
-    )
-    
-    return jsonify({
-        "response": message.content[0].text
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-'''
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import random
 
 app = Flask(__name__)
 CORS(app)
@@ -80,6 +37,16 @@ responses = {
     ],
 }
 
+HARMFUL_KEYWORDS = [
+    'kill', 'die', 'suicide', 'murder', 'rape', 'abuse',
+    'hate', 'slur', 'racist', 'terrorist', 'bomb', 'attack',
+    'porn', 'sex', 'naked', 'nude',
+]
+
+def contains_harmful_content(text: str) -> bool:
+    text_lower = text.lower()
+    return any(keyword in text_lower for keyword in HARMFUL_KEYWORDS)
+
 @app.route('/journal-response', methods=['POST'])
 def journal_response():
     data = request.json
@@ -90,6 +57,19 @@ def journal_response():
     response = random.choice(mood_responses)
 
     return jsonify({"response": response})
+
+@app.route('/check-content', methods=['POST'])
+def check_content():
+    data = request.json
+    content = data.get('content', '')
+
+    if contains_harmful_content(content):
+        return jsonify({
+            "safe": False,
+            "reason": "This post contains content that isn't allowed in our community."
+        })
+
+    return jsonify({"safe": True})
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000, host='0.0.0.0')

@@ -13,6 +13,17 @@ export async function getCommunityPosts() {
 export async function addCommunityPost(content: string) {
   const { data: { user } } = await supabase.auth.getUser()
 
+  const res = await fetch('https://web-production-e9438.up.railway.app/check-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  })
+  const check = await res.json()
+
+  if (!check.safe) {
+    throw new Error(check.reason)
+  }
+
   const { error } = await supabase
     .from('community_posts')
     .insert({
