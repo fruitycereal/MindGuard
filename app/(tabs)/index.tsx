@@ -1,6 +1,6 @@
-import { saveMoodEntry } from '@/lib/moodService';
+import { getMoodEntries, saveMoodEntry } from '@/lib/moodService';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const moods = [
@@ -16,6 +16,27 @@ export default function HomeScreen() {
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    checkTodaysMood();
+  }, []);
+
+  const checkTodaysMood = async () => {
+    try {
+      const data = await getMoodEntries();
+      if (!data) return;
+      const today = new Date().toDateString();
+      const todayEntry = data.find(e => 
+        e.created_at && new Date(e.created_at).toDateString() === today && e.mood
+      );
+      if (todayEntry) {
+        setSelected(todayEntry.mood);
+        setSaved(true);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
 
   const handleMoodSelect = async (mood: string) => {
     if (saving || saved) return;

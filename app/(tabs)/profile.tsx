@@ -1,6 +1,6 @@
 import { getMoodEntries } from '@/lib/moodService';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const moodColors: Record<string, string> = {
@@ -20,7 +20,11 @@ export default function ProfileScreen() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const router = useRouter();
 
-  useEffect(() => { loadEntries(); }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadEntries();
+    }, [])
+  );
 
   const loadEntries = async () => {
     try {
