@@ -1,3 +1,4 @@
+import { getDailyPrompt } from '@/lib/dailyPrompts';
 import { getMoodEntries, saveMoodEntry } from '@/lib/moodService';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ export default function HomeScreen() {
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const dailyPrompt = getDailyPrompt();
 
   useEffect(() => {
     checkTodaysMood();
@@ -51,10 +53,15 @@ export default function HomeScreen() {
     setSaving(false);
   };
 
-  return (
+return (
     <View style={styles.container}>
       {!saved ? (
         <>
+          <View style={styles.dailyPromptTop}>
+            <Text style={styles.dailyPromptLabel}>Today's reflection</Text>
+            <Text style={styles.dailyPromptText}>{dailyPrompt}</Text>
+          </View>
+
           <Text style={styles.greeting}>Hey. How are you doing today — really?</Text>
           <Text style={styles.sub}>No wrong answers. Just how you actually feel.</Text>
 
@@ -76,52 +83,61 @@ export default function HomeScreen() {
           ))}
         </>
       ) : (
-<View style={styles.confirmedContainer}>
-  <Text style={styles.confirmedEmoji}>🌿</Text>
-  <Text style={styles.confirmedTitle}>Noted.</Text>
-  <Text style={styles.confirmedSub}>
-    You checked in as "{selected}". {'\n'}
-    Want to write about it?
-  </Text>
+        <View style={styles.confirmedContainer}>
+          <Text style={styles.confirmedEmoji}>🌿</Text>
+          <Text style={styles.confirmedTitle}>Noted.</Text>
+          <Text style={styles.confirmedSub}>
+            You checked in as "{selected}". {'\n'}
+            Want to write about it?
+          </Text>
 
-  {selected === 'Really struggling' && (
-    <View style={styles.crisisCard}>
-      <Text style={styles.crisisTitle}>You don't have to carry this alone.</Text>
-      <Text style={styles.crisisSub}>Real people are available right now:</Text>
-      <View style={styles.crisisRow}>
-        <Text style={styles.crisisName}>Samaritans Thailand</Text>
-        <Text style={styles.crisisNumber}>02 713 6793</Text>
-      </View>
-      <View style={styles.crisisRow}>
-        <Text style={styles.crisisName}>Mental Health Hotline</Text>
-        <Text style={styles.crisisNumber}>1323</Text>
-      </View>
-      <Text style={styles.crisisNote}>Free · 24 hours · confidential</Text>
-    </View>
-  )}
+          <View style={styles.promptCard}>
+            <Text style={styles.promptLabel}>Today's reflection</Text>
+            <Text style={styles.promptText}>{dailyPrompt}</Text>
+            <TouchableOpacity
+              style={styles.promptBtn}
+              onPress={() => router.push('/(tabs)/explore')}
+            >
+              <Text style={styles.promptBtnText}>Write about this</Text>
+            </TouchableOpacity>
+          </View>
 
-  <TouchableOpacity
-    style={styles.journalBtn}
-    onPress={() => router.push('/(tabs)/explore')}
-  >
-    <Text style={styles.journalBtnText}>Open journal</Text>
-  </TouchableOpacity>
-  <TouchableOpacity onPress={() => setSaved(false)} style={styles.changeBtn}>
-    <Text style={styles.changeBtnText}>Change my mood</Text>
-  </TouchableOpacity>
-</View>
+          {selected === 'Really struggling' && (
+            <View style={styles.crisisCard}>
+              <Text style={styles.crisisTitle}>You don't have to carry this alone.</Text>
+              <Text style={styles.crisisSub}>Real people are available right now:</Text>
+              <View style={styles.crisisRow}>
+                <Text style={styles.crisisName}>Samaritans Thailand</Text>
+                <Text style={styles.crisisNumber}>02 713 6793</Text>
+              </View>
+              <View style={styles.crisisRow}>
+                <Text style={styles.crisisName}>Mental Health Hotline</Text>
+                <Text style={styles.crisisNumber}>1323</Text>
+              </View>
+              <Text style={styles.crisisNote}>Free · 24 hours · confidential</Text>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.journalBtn}
+            onPress={() => router.push('/(tabs)/explore')}
+          >
+            <Text style={styles.journalBtnText}>Open journal</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSaved(false)} style={styles.changeBtn}>
+            <Text style={styles.changeBtnText}>Change my mood</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
-  );
-}
+  );}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAF8',
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 24,
+    paddingTop: 80,
   },
   greeting: {
     fontSize: 24,
@@ -235,5 +251,62 @@ const styles = StyleSheet.create({
     color: '#A32D2D',
     marginTop: 8,
     textAlign: 'center',
+    },
+    promptCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 20,
+    width: '100%',
+    borderWidth: 0.5,
+    borderColor: '#D3D1C7',
+  },
+  promptLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#888780',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  promptText: {
+    fontSize: 15,
+    color: '#2C2C2A',
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  promptBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#E6F1FB',
+    borderRadius: 20,
+  },
+  promptBtnText: {
+    fontSize: 13,
+    color: '#185FA5',
+    fontWeight: '500',
+  },
+  dailyPromptTop: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 24,
+    width: '100%',
+    borderWidth: 0.5,
+    borderColor: '#D3D1C7',
+  },
+  dailyPromptLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#888780',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  dailyPromptText: {
+    fontSize: 14,
+    color: '#2C2C2A',
+    lineHeight: 22,
   },
 });
