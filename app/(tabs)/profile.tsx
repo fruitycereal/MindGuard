@@ -77,6 +77,41 @@ export default function ProfileScreen() {
     return { text: `${count} days. You keep coming back.`, sub: "That takes more strength than you know." };
   };
 
+  const getWeeklyInsight = () => {
+    if (entries.length < 2) return null;
+
+    const today = new Date();
+    const thisWeekStart = new Date(today);
+    thisWeekStart.setDate(today.getDate() - 7);
+    const lastWeekStart = new Date(today);
+    lastWeekStart.setDate(today.getDate() - 14);
+
+    const heavyMoods = ["A bit heavy", "Really struggling", "I don't even know"];
+
+    const thisWeek = entries.filter(e => {
+      const d = new Date(e.created_at);
+      return d >= thisWeekStart && e.mood;
+    });
+
+    const lastWeek = entries.filter(e => {
+      const d = new Date(e.created_at);
+      return d >= lastWeekStart && d < thisWeekStart && e.mood;
+    });
+
+    if (thisWeek.length === 0 || lastWeek.length === 0) return null;
+
+    const thisHeavy = thisWeek.filter(e => heavyMoods.includes(e.mood)).length;
+    const lastHeavy = lastWeek.filter(e => heavyMoods.includes(e.mood)).length;
+
+    if (thisHeavy < lastHeavy) {
+      return `This week felt lighter than last week. That's real progress, even if it doesn't feel like it.`;
+    } else if (thisHeavy > lastHeavy) {
+      return `This week felt heavier. That's okay — hard weeks happen and you're still here.`;
+    } else {
+      return `You've been consistent this week. Showing up every day takes more strength than people realize.`;
+    }
+  };
+
   const calendarDays = getCalendarDays();
   const praise = getPraiseMessage();
   const isCurrentMonth = currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
@@ -102,6 +137,13 @@ export default function ProfileScreen() {
         <Text style={styles.praiseText}>{praise.text}</Text>
         <Text style={styles.praiseSub}>{praise.sub}</Text>
       </View>
+
+      {getWeeklyInsight() && (
+        <View style={styles.insightCard}>
+          <Text style={styles.insightLabel}>Weekly insight</Text>
+          <Text style={styles.insightText}>{getWeeklyInsight()}</Text>
+        </View>
+      )}
 
       <View style={styles.legend}>
         <Text style={styles.legendTitle}>Mood key</Text>
@@ -288,5 +330,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#2C2C2A',
     fontWeight: '500',
+  },
+  insightCard: {
+  backgroundColor: '#EAF3DE',
+  borderRadius: 14,
+  padding: 16,
+  marginBottom: 16,
+  },
+  insightLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#3B6D11',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  insightText: {
+    fontSize: 14,
+    color: '#27500A',
+    lineHeight: 22,
   },
 });
