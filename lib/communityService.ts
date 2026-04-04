@@ -53,3 +53,40 @@ export async function toggleFeel(postId: string, currentlyFelt: boolean) {
     if (error) throw error
   }
 }
+
+export async function getReplies(postId: number) {
+  const { data, error } = await supabase
+    .from('post_replies')
+    .select('*')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data
+}
+
+export async function addReply(postId: number, content: string) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const res = await fetch('https://web-production-e9438.up.railway.app/check-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  })
+  const check = await res.json()
+
+  if (!check.safe) {
+    throw new Error(check.reason)
+  }
+
+  const { error } = await supabase
+    .from('post_replies')
+    .insert({
+      post_id: postId,
+      user_id: user.id,
+      content,
+    })
+
+  if (error) throw error
+}
