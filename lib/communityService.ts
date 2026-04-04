@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase } from './supabase';
 
 export async function getCommunityPosts() {
   const { data, error } = await supabase
@@ -87,6 +87,15 @@ export async function addReply(postId: number, content: string) {
       user_id: user.id,
       content,
     })
+
+  if (error) throw error
+}
+
+export async function deletePost(postId: number) {
+  const { error } = await supabase
+    .from('community_posts')
+    .delete()
+    .eq('id', postId)
 
   if (error) throw error
 }

@@ -1,7 +1,7 @@
-import { addCommunityPost, addReply, getCommunityPosts, getReplies, toggleFeel } from '@/lib/communityService';
+import { addCommunityPost, addReply, deletePost, getCommunityPosts, getReplies, toggleFeel } from '@/lib/communityService';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function CommunityScreen() {
   const [viewingReplies, setViewingReplies] = useState<any | null>(null);
@@ -91,6 +91,28 @@ export default function CommunityScreen() {
       console.log('Error:', error);
     }
   };
+
+  const handleDeletePost = async (postId: number) => {
+  Alert.alert(
+    'Delete post',
+    'Are you sure? This cannot be undone.',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deletePost(postId);
+            await loadPosts();
+          } catch (error) {
+            console.log('Error deleting post:', error);
+          }
+        },
+      },
+    ]
+  );
+};
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -272,6 +294,15 @@ return (
                     </TouchableOpacity>
                   </View>
                 </View>
+                {post.user_id === currentUserId && (
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={() => handleDeletePost(post.id)}
+                  >
+                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                )}
+                
                 <TouchableOpacity
                   style={styles.showRepliesBtn}
                   onPress={async () => {
@@ -571,5 +602,13 @@ replyFromModalBtnText: {
   cancelText: {
     fontSize: 14,
     color: '#888780',
+  },
+  deleteBtn: {
+    alignSelf: 'flex-end',
+    marginTop: 8,
+  },
+  deleteBtnText: {
+    fontSize: 12,
+    color: '#A32D2D',
   },
 });
