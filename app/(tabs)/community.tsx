@@ -1,3 +1,4 @@
+import { addChallengeResponse, getChallengeResponses, getCurrentChallenge, hasUserResponded } from '@/lib/challengeService';
 import { addCommunityPost, addReply, deletePost, getCommunityPosts, getReplies, toggleFeel } from '@/lib/communityService';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
@@ -15,10 +16,17 @@ export default function CommunityScreen() {
   const [replyContent, setReplyContent] = useState('');
   const [replies, setReplies] = useState<Record<number, any[]>>({});
   const [expandedPost, setExpandedPost] = useState<number | null>(null);
+  const [challenge, setChallenge] = useState<any | null>(null);
+  const [challengeResponses, setChallengeResponses] = useState<any[]>([]);
+  const [userResponded, setUserResponded] = useState(false);
+  const [challengeContent, setChallengeContent] = useState('');
+  const [viewingChallenge, setViewingChallenge] = useState(false);
+  const [submittingChallenge, setSubmittingChallenge] = useState(false);
 
   useEffect(() => {
     loadUser();
     loadPosts();
+    loadChallenge();
   }, []);
 
   const loadUser = async () => {
@@ -36,7 +44,22 @@ export default function CommunityScreen() {
     setLoading(false);
   };
 
-  const loadReplies = async (postId: number) => {
+  const loadChallenge = async () => {
+    try {
+      const data = await getCurrentChallenge();
+      setChallenge(data);
+      if (data) {
+        const responses = await getChallengeResponses(data.id);
+        setChallengeResponses(responses || []);
+        const responded = await hasUserResponded(data.id);
+        setUserResponded(responded);
+      }
+    } catch (error) {
+      console.log('Error loading challenge:', error);
+    }
+  };
+    
+const loadReplies = async (postId: number) => {
     try {
       const data = await getReplies(postId);
       setReplies(prev => ({ ...prev, [postId]: data || [] }));
@@ -112,6 +135,21 @@ export default function CommunityScreen() {
       },
     ]
   );
+};
+
+const handleChallengeResponse = async () => {
+  if (!challengeContent.trim() || !challenge) return;
+  setSubmittingChallenge(true);
+  try {
+    await addChallengeResponse(challenge.id, challengeContent);
+    setChallengeContent('');
+    setUserResponded(true);
+    const responses = await getChallengeResponses(challenge.id);
+    setChallengeResponses(responses || []);
+  } catch (error: any) {
+    alert(error.message || 'Something went wrong.');
+  }
+  setSubmittingChallenge(false);
 };
 
   const formatDate = (dateStr: string) => {
@@ -249,7 +287,40 @@ return (
           </View>
         </View>
       </Modal>
-
+            
+      <Modal
+        visible={viewingChallenge && userResponded}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setViewingChallenge(false)}
+>
+        <View style={styles.modalOverlay} onTouchEnd={() => setViewingChallenge(false)}>
+          <View style={styles.repliesModalCard} onTouchEnd={(e) => e.stopPropagation()}>
+            <View style={styles.repliesModalHeader}>
+              <Text style={styles.modalTitle}>What others shared</Text>
+              <TouchableOpacity onPress={() => setViewingChallenge(false)}>
+                <Text style={styles.closeBtn}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.repliesPostText} numberOfLines={2}>
+              {challenge?.challenge}
+            </Text>
+            <ScrollView style={styles.repliesScroll} showsVerticalScrollIndicator={false}>
+              {challengeResponses.length === 0 ? (
+                <Text style={styles.noReplies}>No responses yet.</Text>
+              ) : (
+                challengeResponses.map((r: any, index: number) => (
+                  <View key={index} style={styles.replyCard}>
+                    <Text style={styles.replyText}>{r.content}</Text>
+                    <Text style={styles.replyDate}>{formatDate(r.created_at)}</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+      
       <View style={styles.header}>
         <Text style={styles.title}>You're not alone.</Text>
         <Text style={styles.sub}>Anonymous thoughts from people just like you.</Text>
@@ -257,7 +328,61 @@ return (
           <Text style={styles.shareBtnText}>+ Share something</Text>
         </TouchableOpacity>
       </View>
+              {challenge && (
+  <View style={styles.challengeCard}>
+    <Text style={styles.challengeLabel}>This week's challenge</Text>
+    <Text style={styles.challengeText}>{challenge.challenge}</Text>
+    <Text style={styles.challengeCount}>
+      {challengeResponses.length} {challengeResponses.length === 1 ? 'person' : 'people'} responded
+    </Text>
 
+    {!viewingChallenge && !userResponded && (
+      <TouchableOpacity
+        style={styles.challengeBtn}
+        onPress={() => setViewingChallenge(true)}
+      >
+        <Text style={styles.challengeBtnText}>Join the challenge</Text>
+      </TouchableOpacity>
+    )}
+
+    {viewingChallenge && !userResponded && (
+      <>
+        <TextInput
+          style={styles.challengeInput}
+          placeholder="Share your response anonymously..."
+          placeholderTextColor="#B4B2A9"
+          multiline
+          value={challengeContent}
+          onChangeText={setChallengeContent}
+          maxLength={280}
+        />
+        <TouchableOpacity
+          style={[styles.challengeSubmitBtn, !challengeContent.trim() && styles.btnDisabled]}
+          onPress={handleChallengeResponse}
+          disabled={!challengeContent.trim() || submittingChallenge}
+        >
+          {submittingChallenge ? (
+            <ActivityIndicator color="#E6F1FB" />
+          ) : (
+            <Text style={styles.challengeBtnText}>Share anonymously</Text>
+          )}
+        </TouchableOpacity>
+      </>
+    )}
+
+    {userResponded && (
+      <Text style={styles.challengeResponded}>You responded this week.</Text>
+    )}
+
+    <TouchableOpacity
+      onPress={() => setViewingChallenge(true)}
+    >
+      <Text style={styles.viewResponsesText}>
+          See what others shared →
+        </Text>
+      </TouchableOpacity>
+        </View>
+      )}
       {posts.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyTitle}>Nothing here yet.</Text>
@@ -302,7 +427,7 @@ return (
                     <Text style={styles.deleteBtnText}>Delete</Text>
                   </TouchableOpacity>
                 )}
-                
+
                 <TouchableOpacity
                   style={styles.showRepliesBtn}
                   onPress={async () => {
@@ -611,4 +736,73 @@ replyFromModalBtnText: {
     fontSize: 12,
     color: '#A32D2D',
   },
+  challengeCard: {
+  backgroundColor: '#EEEDFE',
+  borderRadius: 14,
+  padding: 16,
+  marginBottom: 20,
+  borderWidth: 0.5,
+  borderColor: '#AFA9EC',
+},
+challengeLabel: {
+  fontSize: 11,
+  fontWeight: '500',
+  color: '#534AB7',
+  textTransform: 'uppercase',
+  letterSpacing: 0.5,
+  marginBottom: 8,
+},
+challengeText: {
+  fontSize: 15,
+  color: '#26215C',
+  lineHeight: 24,
+  fontWeight: '500',
+  marginBottom: 8,
+},
+challengeCount: {
+  fontSize: 12,
+  color: '#7F77DD',
+  marginBottom: 12,
+},
+challengeBtn: {
+  backgroundColor: '#7F77DD',
+  padding: 12,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginBottom: 8,
+},
+challengeSubmitBtn: {
+  backgroundColor: '#7F77DD',
+  padding: 12,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginBottom: 8,
+},
+challengeBtnText: {
+  color: '#FFFFFF',
+  fontSize: 14,
+  fontWeight: '500',
+},
+challengeInput: {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 10,
+  padding: 12,
+  fontSize: 14,
+  color: '#2C2C2A',
+  minHeight: 80,
+  marginBottom: 8,
+  borderWidth: 0.5,
+  borderColor: '#AFA9EC',
+},
+challengeResponded: {
+  fontSize: 13,
+  color: '#534AB7',
+  fontStyle: 'italic',
+  marginBottom: 8,
+},
+viewResponsesText: {
+  fontSize: 13,
+  color: '#7F77DD',
+  marginTop: 4,
+},
 });
